@@ -86,6 +86,79 @@ shared result envelope
 - 输出扇出：[notifiers.py](/Users/boyuewu/Documents/Projects/AIProjects/openclaw-capture-skill/openclaw-capture/scripts/runtime/openclaw_capture_skill/notifiers.py)
 - STT 桥接：[video_audio_bridge.py](/Users/boyuewu/Documents/Projects/AIProjects/openclaw-capture-skill/openclaw-capture/scripts/runtime/openclaw_capture_skill/video_audio_bridge.py)
 
+### 3.1 GitHub 演示版总流程图
+
+这个图适合放在 GitHub README 顶部，也适合录视频时先讲“系统边界”：
+
+```mermaid
+flowchart LR
+    A["用户消息<br/>直接对话 / 群里 @bot"] --> B["OpenClaw / ClawHub"]
+    B --> C["openclaw-capture<br/>skill wrapper"]
+    C --> D{"backend mode"}
+    D -->|library| E["直接 import<br/>openclaw_capture_workflow"]
+    D -->|http| F["调用 legacy /ingest<br/>轮询 /jobs/<id>"]
+    E --> G["统一结果 envelope"]
+    F --> G
+    G --> H["Telegram"]
+    G --> I["Feishu"]
+    E --> J["Obsidian / 本地知识库"]
+```
+
+### 3.2 平台路由图
+
+这个图适合你在视频里讲“Mac 和非 Mac 为什么不是一条链路”：
+
+```mermaid
+flowchart TD
+    A["收到视频 URL"] --> B{"当前系统是不是 macOS?"}
+    B -->|是| C["mac_local_first"]
+    C --> D["Apple SpeechTranscriber<br/>本地转录"]
+    D --> E{"本地转录成功?"}
+    E -->|是| J["进入 legacy workflow 总结"]
+    E -->|否| F["回退远程 STT"]
+    B -->|否| G{"是否配置 OPENCLAW_CAPTURE_LOCAL_STT_COMMAND?"}
+    G -->|是| H["执行本地 CLI<br/>下载 / 转录"]
+    H --> I{"本地 CLI 成功?"}
+    I -->|是| J
+    I -->|否| F
+    G -->|否| F["直接远程 STT"]
+    F --> J
+```
+
+### 3.3 模型与出口路由图
+
+这个图适合你讲“输入进来之后，模型接入和消息出口是怎么切开的”：
+
+```mermaid
+flowchart LR
+    A["提取出的证据"] --> B{"模型 profile"}
+    B -->|openai_direct| C["直接用用户自己的 Key / Base URL"]
+    B -->|aihubmix_gateway| D["走 AIHubMix / OpenAI-compatible 网关"]
+    C --> E["生成统一 summary"]
+    D --> E
+    E --> F{"输出模块"}
+    F -->|telegram| G["复用 legacy Telegram 文本模板"]
+    F -->|feishu| H["同一份文本 envelope<br/>通过 webhook 发到 Feishu"]
+    F -->|telegram + feishu| I["双出口 fanout"]
+```
+
+### 3.4 录视频时可以怎么讲
+
+如果你想快速讲明白，可以按这个顺序：
+
+1. 先讲入口：用户在 Telegram 或 Feishu 里直接发消息，或者在群里 `@bot`。
+2. 再讲 wrapper：`openclaw-capture` 不重写旧后端，只负责路由、配置和 fanout。
+3. 再讲 backend mode：默认推荐 `library`，兼容老服务时可以走 `http`。
+4. 再讲平台分流：Mac 走 Apple 本地转录，非 Mac 先看有没有本地 CLI，没有就走远程 STT。
+5. 再讲模型接入：可以直接用自己的模型 Key，也可以走 AIHubMix 这种 OpenAI-compatible 网关。
+6. 最后讲出口：同一份 summary 可以发 Telegram、Feishu，也可以同时发两边。
+
+### 3.5 一句话讲解模板
+
+你录视频时可以直接说：
+
+> 这个项目不是重写旧工作流，而是在旧工作流外面包了一层 skill wrapper。用户消息进来之后，先决定走本地 import 还是 legacy HTTP；如果是视频，再看当前是不是 Mac，Mac 优先走苹果本地转录，非 Mac 优先走命令行下载和转录，不行再回退云端；最后用统一的 summary 结果同时支持 Telegram 和 Feishu 出口。
+
 ## 4. 支持的模块与策略
 
 ### 核心 wrapper
@@ -156,6 +229,8 @@ Feishu 当前使用 webhook 文本消息：
 
 - 旧服务已经在跑
 - 想先复用原来的服务进程
+
+详细版本见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
 ## 6. 配置接口
 
