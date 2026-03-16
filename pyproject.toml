@@ -1,0 +1,24 @@
+[project]
+name = "openclaw-capture-skill"
+version = "0.1.0"
+description = "OpenClaw skill wrapper around the local openclaw_capture_workflow."
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "Codex" }
+]
+
+[project.scripts]
+openclaw-capture-dispatch = "openclaw_capture_skill.cli:main"
+openclaw-capture-video-audio-bridge = "openclaw_capture_skill.video_audio_bridge:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "openclaw-capture/scripts/runtime"}
+
+[tool.setuptools.packages.find]
+where = ["openclaw-capture/scripts/runtime"]
+
