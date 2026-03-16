@@ -88,8 +88,6 @@ shared result envelope
 
 ### 3.1 GitHub 演示版总流程图
 
-这个图适合放在 GitHub README 顶部，也适合录视频时先讲“系统边界”：
-
 ```mermaid
 flowchart LR
     A["用户消息<br/>直接对话 / 群里 @bot"] --> B["OpenClaw / ClawHub"]
@@ -105,8 +103,6 @@ flowchart LR
 ```
 
 ### 3.2 平台路由图
-
-这个图适合你在视频里讲“Mac 和非 Mac 为什么不是一条链路”：
 
 ```mermaid
 flowchart TD
@@ -127,8 +123,6 @@ flowchart TD
 
 ### 3.3 模型与出口路由图
 
-这个图适合你讲“输入进来之后，模型接入和消息出口是怎么切开的”：
-
 ```mermaid
 flowchart LR
     A["提取出的证据"] --> B{"模型 profile"}
@@ -141,17 +135,6 @@ flowchart LR
     F -->|feishu| H["同一份文本 envelope<br/>通过 webhook 发到 Feishu"]
     F -->|telegram + feishu| I["双出口 fanout"]
 ```
-
-### 3.4 录视频时可以怎么讲
-
-推荐的讲解顺序：
-
-1. 入口消息进入 OpenClaw / ClawHub。
-2. `openclaw-capture` wrapper 负责 backend mode、STT、模型 profile、输出 fanout。
-3. `library` 模式直接 import `openclaw_capture_workflow`。
-4. `http` 模式兼容 legacy `/ingest`。
-5. 视频链路按平台分流：Mac 优先 Apple 本地转录，非 Mac 优先本地 CLI，再回退远程 STT。
-6. 最终统一 summary 可以发送到 Telegram、Feishu 或双出口。
 
 ## 4. 支持的模块与策略
 

@@ -1,6 +1,6 @@
 # OpenClaw Capture Skill Architecture
 
-这份文档给 GitHub 阅读和视频讲解使用。目标不是解释每一行代码，而是把这套 wrapper 的边界、路由逻辑和平台分流讲清楚。
+这份文档用于说明 wrapper 的边界、路由逻辑和平台分流。
 
 ## 1. 系统边界
 
@@ -71,8 +71,6 @@ flowchart LR
 
 ## 4. 视频转录平台分流
 
-这部分是最适合录视频讲的重点。
-
 ```mermaid
 flowchart TD
     A["收到视频 URL"] --> B{"当前系统是不是 macOS?"}
@@ -88,12 +86,6 @@ flowchart TD
     I -->|否| F
     G -->|否| F
 ```
-
-### 你可以这样讲
-
-- Mac 优先 Apple 本地转录。
-- 非 Mac 优先本地 CLI 下载和转录。
-- 本地链路失败后统一回退远程 STT。
 
 ## 5. 模型接入路由
 
@@ -149,18 +141,7 @@ flowchart LR
 - `openclaw-capture/scripts/runtime/openclaw_capture_skill/notifiers.py`
 - `openclaw-capture/scripts/runtime/openclaw_capture_skill/config.py`
 
-## 8. 演示顺序
-
-适合演示的顺序：
-
-1. 入口消息
-2. wrapper 层
-3. `library` / `http`
-4. 平台分流
-5. 模型 profile
-6. 输出 fanout
-
-## 9. 本地监听模式
+## 8. 本地监听模式
 
 如果需要让这个 wrapper 自己监听 `/ingest`，可以直接运行：
 
