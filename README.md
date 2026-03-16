@@ -144,20 +144,14 @@ flowchart LR
 
 ### 3.4 录视频时可以怎么讲
 
-如果你想快速讲明白，可以按这个顺序：
+推荐的讲解顺序：
 
-1. 先讲入口：用户在 Telegram 或 Feishu 里直接发消息，或者在群里 `@bot`。
-2. 再讲 wrapper：`openclaw-capture` 不重写旧后端，只负责路由、配置和 fanout。
-3. 再讲 backend mode：默认推荐 `library`，兼容老服务时可以走 `http`。
-4. 再讲平台分流：Mac 走 Apple 本地转录，非 Mac 先看有没有本地 CLI，没有就走远程 STT。
-5. 再讲模型接入：可以直接用自己的模型 Key，也可以走 AIHubMix 这种 OpenAI-compatible 网关。
-6. 最后讲出口：同一份 summary 可以发 Telegram、Feishu，也可以同时发两边。
-
-### 3.5 一句话讲解模板
-
-你录视频时可以直接说：
-
-> 这个项目不是重写旧工作流，而是在旧工作流外面包了一层 skill wrapper。用户消息进来之后，先决定走本地 import 还是 legacy HTTP；如果是视频，再看当前是不是 Mac，Mac 优先走苹果本地转录，非 Mac 优先走命令行下载和转录，不行再回退云端；最后用统一的 summary 结果同时支持 Telegram 和 Feishu 出口。
+1. 入口消息进入 OpenClaw / ClawHub。
+2. `openclaw-capture` wrapper 负责 backend mode、STT、模型 profile、输出 fanout。
+3. `library` 模式直接 import `openclaw_capture_workflow`。
+4. `http` 模式兼容 legacy `/ingest`。
+5. 视频链路按平台分流：Mac 优先 Apple 本地转录，非 Mac 优先本地 CLI，再回退远程 STT。
+6. 最终统一 summary 可以发送到 Telegram、Feishu 或双出口。
 
 ## 4. 支持的模块与策略
 
@@ -266,7 +260,31 @@ profile 的默认策略已经内置在 [profiles.py](/Users/boyuewu/Documents/Pr
 
 这已经和旧仓库的 `~/.openclaw/skills/...` 路径区分开了。
 
-## 8. 使用示例
+## 8. 启动监听服务
+
+复制仓库或安装 skill 之后，如果需要本地直接提供 `/ingest` 监听，必须显式启动 wrapper 服务：
+
+```bash
+cd /Users/boyuewu/Documents/Projects/AIProjects/openclaw-capture-skill/openclaw-capture
+
+OPENCLAW_CAPTURE_LEGACY_PROJECT_ROOT=/Users/boyuewu/Documents/Projects/AIProjects/openclaw_capture_workflow \
+OPENCLAW_CAPTURE_BACKEND_MODE=library \
+python3 scripts/dispatch_capture.py serve --host 127.0.0.1 --port 8765
+```
+
+健康检查：
+
+```bash
+curl http://127.0.0.1:8765/health
+```
+
+成功时应返回：
+
+```json
+{"ok": true}
+```
+
+## 9. 使用示例
 
 ### 示例 1：从源码目录直接调用
 
@@ -308,7 +326,7 @@ python3 scripts/dispatch_capture.py <<'JSON'
 JSON
 ```
 
-## 9. 已完成的验证
+## 10. 已完成的验证
 
 ### 自动化测试
 
@@ -343,14 +361,14 @@ python3 -m unittest discover -s tests
 
 这样即使没有可用模型 key，安装后的 skill 仍能产出可读的预览内容，而不是只返回 `note renderer unavailable` 或被旧 fallback summary 拒掉。
 
-## 10. 当前边界与限制
+## 11. 当前边界与限制
 
 - Feishu 目前走 webhook 文本消息，还不是更复杂的卡片格式
 - `http` 模式下 Telegram 仍默认交给 legacy 服务，以避免重复回执
 - 非 OpenAI-compatible 的原生网关不在 v1 范围内
 - 旧 payload 仍保留 `chat_id` / `reply_to_message_id` 这种 Telegram 风格字段，v1 没有把协议彻底去 Telegram 化
 
-## 11. 这个 skill 现在是否真的可用
+## 12. 这个 skill 现在是否真的可用
 
 结论：可以用。
 
@@ -362,7 +380,4 @@ python3 -m unittest discover -s tests
 - 能在 `http` 模式兼容旧服务
 - 能在没有模型 key 的情况下给出本地 dry-run 结果
 
-如果你要，我下一步可以继续做两件事里的任意一个：
-
-1. 再补一轮“安装后真实命令录屏级验证”，把输出 JSON 和 preview 文件也整理给你。
-2. 把这个项目继续包装成可发布到 ClawHub 的正式仓库结构。 
+当前仓库已经具备 GitHub 仓库、ClawHub 发布和本地 HTTP 监听三种可用形态。

@@ -91,10 +91,9 @@ flowchart TD
 
 ### 你可以这样讲
 
-- 如果是 Mac 用户，这里优先走苹果本地转录，不先消耗外部接口。
-- 如果不是 Mac，就看有没有配本地 CLI。
-- 配了的话，wrapper 会先执行命令行，负责下载和本地转录。
-- 如果本地命令没跑通，再回退到远程 STT。
+- Mac 优先 Apple 本地转录。
+- 非 Mac 优先本地 CLI 下载和转录。
+- 本地链路失败后统一回退远程 STT。
 
 ## 5. 模型接入路由
 
@@ -150,17 +149,29 @@ flowchart LR
 - `openclaw-capture/scripts/runtime/openclaw_capture_skill/notifiers.py`
 - `openclaw-capture/scripts/runtime/openclaw_capture_skill/config.py`
 
-## 8. 视频讲解建议顺序
+## 8. 演示顺序
 
-建议你按这个顺序讲：
+适合演示的顺序：
 
-1. 先讲这个项目不是重写旧系统，而是 wrapper。
-2. 再讲入口：直接对话 / 群里 @bot。
-3. 再讲 backend mode：`library` 和 `http`。
-4. 再讲视频平台分流：Mac 本地优先，非 Mac 命令行优先，最后回退云端。
-5. 再讲模型 profile：直连 Key 和网关模式。
-6. 最后讲 fanout：Telegram / Feishu / 双出口。
+1. 入口消息
+2. wrapper 层
+3. `library` / `http`
+4. 平台分流
+5. 模型 profile
+6. 输出 fanout
 
-## 9. 一段适合口播的话
+## 9. 本地监听模式
 
-> 这个 skill 的核心不是替换掉旧工作流，而是在旧工作流外面增加一层路由器。消息进来以后，先决定是直接 import 旧后端，还是调用旧的 HTTP 服务；如果是视频，再看当前是不是 Mac，Mac 优先用苹果本地转录，非 Mac 优先执行本地命令行下载和转录，不行再回退到云端；最后把同一份 summary 同时发到 Telegram 或 Feishu。
+如果需要让这个 wrapper 自己监听 `/ingest`，可以直接运行：
+
+```bash
+OPENCLAW_CAPTURE_LEGACY_PROJECT_ROOT=/path/to/openclaw_capture_workflow \
+OPENCLAW_CAPTURE_BACKEND_MODE=library \
+python3 openclaw-capture/scripts/dispatch_capture.py serve --host 127.0.0.1 --port 8765
+```
+
+这样复制仓库之后，不需要单独依赖旧服务先启动，wrapper 自己就会提供：
+
+- `GET /health`
+- `POST /ingest`
+- `GET /jobs/<id>`

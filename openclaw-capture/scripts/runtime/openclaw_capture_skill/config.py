@@ -22,6 +22,7 @@ def _locate_legacy_project_root(explicit: str, project_root: Path) -> Path | Non
     if explicit:
         candidates.append(Path(explicit).expanduser())
     candidates.append(project_root / "openclaw_capture_workflow")
+    candidates.append(project_root.parent / "openclaw_capture_workflow")
     candidates.append(Path.cwd() / "openclaw_capture_workflow")
     for candidate in candidates:
         if (candidate / "src" / "openclaw_capture_workflow").exists():
@@ -40,6 +41,8 @@ class Settings:
     skill_root: Path
     project_root: Path
     state_dir: Path
+    listen_host: str = "127.0.0.1"
+    listen_port: int = 8765
     backend_mode: str = "library"
     backend_url: str = "http://127.0.0.1:8765"
     stt_profile: str = "remote_only"
@@ -90,6 +93,8 @@ class Settings:
             skill_root=skill_root,
             project_root=project_root,
             state_dir=state_dir,
+            listen_host=_env("OPENCLAW_CAPTURE_LISTEN_HOST", "127.0.0.1") or "127.0.0.1",
+            listen_port=int(_env("OPENCLAW_CAPTURE_LISTEN_PORT", "8765") or "8765"),
             backend_mode=_env("OPENCLAW_CAPTURE_BACKEND_MODE", "library") or "library",
             backend_url=_env("OPENCLAW_CAPTURE_BACKEND_URL", "http://127.0.0.1:8765") or "http://127.0.0.1:8765",
             stt_profile=stt_profile,
@@ -108,4 +113,3 @@ class Settings:
             legacy_env_path=legacy_env_path,
             vault_path_override=_env("OPENCLAW_CAPTURE_VAULT_PATH"),
         )
-
