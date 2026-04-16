@@ -1,5 +1,21 @@
 # OpenClaw Capture Skill
 
+<div align="center">
+
+**把已经跑通的内容理解后端，包装成一个可安装、可路由、可多出口分发的 OpenClaw skill。**
+
+![OpenClaw](https://img.shields.io/badge/OpenClaw-Skill-1D4ED8?style=flat-square)
+![Routing](https://img.shields.io/badge/Routing-Multi_Profile-0F766E?style=flat-square)
+![Obsidian](https://img.shields.io/badge/Output-Obsidian-7C3AED?style=flat-square)
+![Telegram](https://img.shields.io/badge/Notify-Telegram-0891B2?style=flat-square)
+![Wrapper](https://img.shields.io/badge/Role-Wrapper_Layer-C62828?style=flat-square)
+
+本地 backend 复用 · skill 安装分发 · 多出口 fanout · 路由切换
+
+[架构文档](docs/ARCHITECTURE.md) · [赞助支持](#donate)
+
+</div>
+
 `openclaw-capture-skill` 是一个给 OpenClaw / ClawHub 用的“外包裹 skill 项目”。
 
 它不重写 [openclaw_capture_workflow](/Users/boyuewu/Documents/Projects/AIProjects/openclaw_capture_workflow) 的核心处理能力，而是把那个已经跑通的本地工作流包装成一个更容易安装、切换链路、切换模型入口、切换消息出口的 skill。
@@ -7,6 +23,12 @@
 一句话理解：
 
 > 旧项目继续负责真正的内容理解与落库，新项目负责把它变成一个可安装、可路由、可多出口的 OpenClaw skill。
+
+## <a id="donate"></a>赞助支持
+
+如果这个项目对你有帮助，欢迎通过 GitHub Sponsors 支持后续维护：
+
+- GitHub Sponsors: https://github.com/sponsors/Etherstrings
 
 ## 1. 这个项目解决什么问题
 
